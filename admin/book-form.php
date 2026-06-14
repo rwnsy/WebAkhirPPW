@@ -60,7 +60,8 @@ function upload_cover($fieldName, $oldFile = '')
     $allowedMimes = [
         'image/jpeg' => 'jpg',
         'image/png' => 'png',
-        'image/webp' => 'webp'
+        'image/webp' => 'webp',
+        'image/avif' => 'avif'
     ];
     $tmpFile = $_FILES[$fieldName]['tmp_name'];
 
@@ -75,7 +76,7 @@ function upload_cover($fieldName, $oldFile = '')
     $detectedMimes = [];
     $imageInfo = @getimagesize($tmpFile);
     if (!$imageInfo || empty($imageInfo['mime'])) {
-        throw new RuntimeException("File cover bukan gambar valid. Gunakan JPG, PNG, atau WEBP asli.");
+        throw new RuntimeException("File cover bukan gambar valid. Gunakan JPG, PNG, WEBP, atau AVIF asli.");
     }
 
     $detectedMimes[] = $imageInfo['mime'];
@@ -95,12 +96,12 @@ function upload_cover($fieldName, $oldFile = '')
     $primaryMime = $imageInfo['mime'];
 
     if (!isset($allowedMimes[$primaryMime])) {
-        throw new RuntimeException("Format gambar harus JPG, PNG, atau WEBP. Tipe terdeteksi: " . $primaryMime . ".");
+        throw new RuntimeException("Format gambar harus JPG, PNG, WEBP, atau AVIF. Tipe terdeteksi: " . $primaryMime . ".");
     }
 
     foreach ($detectedMimes as $detectedMime) {
         if (!isset($allowedMimes[$detectedMime]) || $allowedMimes[$detectedMime] !== $allowedMimes[$primaryMime]) {
-            throw new RuntimeException("Isi file cover tidak konsisten. Upload ulang file JPG, PNG, atau WEBP asli.");
+            throw new RuntimeException("Isi file cover tidak konsisten. Upload ulang file JPG, PNG, WEBP, atau AVIF asli.");
         }
     }
 
@@ -220,7 +221,7 @@ $adminPage = $isEdit ? 'books' : 'add-book';
                     <input type="number" name="stok" min="0" required value="<?= e($book['stok']); ?>">
                 </label>
                 <label>Gambar Cover
-                    <input type="file" name="gambar" accept="image/jpeg,image/png,image/webp" data-image-preview="#coverPreview">
+                    <input type="file" name="gambar" accept="image/jpeg,image/png,image/webp,image/avif,.avif" data-image-preview="#coverPreview">
                 </label>
             </div>
 

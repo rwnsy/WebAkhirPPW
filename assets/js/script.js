@@ -186,10 +186,14 @@ document.querySelectorAll("[data-image-preview]").forEach((input) => {
             delete preview.dataset.previewUrl;
         }
 
-        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        const allowedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+        const allowedImageExtensions = ["jpg", "jpeg", "png", "webp", "avif"];
+        const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+
+        if (!allowedImageTypes.includes(file.type) && !allowedImageExtensions.includes(fileExtension)) {
             input.value = "";
             preview.classList.add("is-hidden");
-            showToast("Format cover harus JPG, PNG, atau WEBP.", "error");
+            showToast("Format cover harus JPG, PNG, WEBP, atau AVIF.", "error");
             return;
         }
 
