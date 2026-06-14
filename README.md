@@ -1,184 +1,66 @@
-# Pustakata - PHP Native
+# Pustakata
 
-Pustakata adalah website toko buku online sederhana untuk UAS/Responsi Pemrograman Web 1. Project memakai HTML, CSS custom, JavaScript vanilla, PHP Native, dan MySQL/MariaDB.
+Pustakata adalah aplikasi toko buku online berbasis PHP Native dan MySQL. Aplikasi ini dibuat untuk kebutuhan pembelajaran Pemrograman Web, tetapi struktur fiturnya disusun agar tetap rapi, mudah diuji, dan siap dipindahkan ke shared hosting seperti Hostinger.
 
-## Fitur
+Fokus utama project ini adalah katalog buku, keranjang belanja berbasis session, autentikasi user, dashboard admin, upload cover buku, komunitas pembaca, ulasan, dan newsletter.
 
-- Beranda dengan buku dan kategori dinamis dari database
-- Section buku terbaru dan CTA menuju katalog toko
-- Katalog toko dengan search, filter kategori, pagination, rating, dan stok
-- Detail buku dengan data review
-- Rekomendasi buku sejenis di detail buku
-- Komunitas pembaca dengan posting user dari database
-- Detail tulisan komunitas dan admin moderasi publish/hide/delete
-- Feed ulasan pembaca dari relasi review dan buku
-- Newsletter subscriber tersimpan ke database
-- Cart sederhana berbasis session
-- Checkout keranjang untuk alur belanja WEB1 tanpa payment gateway
-- Login, logout, signup user
-- Role `admin` dan `user`
-- Dashboard admin
-- CRUD buku
-- Upload cover JPG, PNG, WEBP, AVIF maksimal 2 MB
-- Preview cover sebelum upload
-- Character counter deskripsi buku
-- CSRF token pada form penting
-- Hapus buku via POST dengan modal konfirmasi custom
-- Toast feedback sukses/error
-- Badge stok: Habis, Stok Menipis, Tersedia
-- Scroll to top dan feedback pencarian
-- Responsive untuk mobile, tablet, dan desktop
+## Ringkasan
 
-## Data Responsi
+| Area | Keterangan |
+| --- | --- |
+| Jenis aplikasi | Toko buku online dan komunitas pembaca |
+| Backend | PHP Native |
+| Database | MySQL atau MariaDB |
+| Frontend | HTML, CSS custom, JavaScript vanilla |
+| Autentikasi | PHP session dengan role `admin` dan `user` |
+| Upload | Cover buku JPG, PNG, WEBP, dan AVIF maksimal 2 MB |
+| Status pembayaran | Simulasi checkout, belum memakai payment gateway |
 
-Fresh import `database/schema.sql` berisi data awal untuk memperkuat responsi:
+## Fitur Utama
 
-- 4 user, termasuk 1 admin
-- 8 buku dari kategori Novel, Pengembangan Diri, Teknologi, Fantasi, Akademik, dan Sejarah
-- 10 review yang terhubung ke buku valid
-- 5 tulisan komunitas yang terhubung ke user valid
-- Tabel `newsletter_subscribers` dengan 2 email awal
+### Pengunjung dan User
 
-Jika database lokal sudah terlanjur berisi data lama, import:
+- Melihat beranda dengan data buku dan kategori dari database.
+- Menelusuri katalog buku dengan pencarian, filter kategori, dan pagination.
+- Membuka detail buku, termasuk stok, harga, deskripsi, rating, dan rekomendasi buku sejenis.
+- Membuat akun dan login sebagai user.
+- Menambahkan buku ke keranjang berbasis session.
+- Melakukan checkout setelah login.
+- Membaca dan membuat tulisan komunitas.
+- Mengirim email ke daftar newsletter.
 
-```text
-database/seed_responsi.sql
-```
+### Admin
 
-File tersebut menambah data responsi secara idempotent tanpa menghapus data lama.
+- Login sebagai administrator.
+- Melihat dashboard ringkasan data.
+- Mengelola data buku melalui fitur tambah, edit, dan hapus.
+- Mengunggah dan mengganti cover buku.
+- Melihat badge stok buku.
+- Mengelola profil admin.
+- Memoderasi tulisan komunitas dengan status publish, hide, dan delete.
 
-## Query Responsi
+### Keamanan dan Pengalaman Pengguna
 
-Query 1 tabel:
+- CSRF token pada form penting.
+- Password disimpan dengan hash.
+- Role-based access untuk halaman admin.
+- Validasi upload cover di server dan browser.
+- Proteksi `.htaccess` untuk folder sensitif.
+- Toast feedback, modal konfirmasi, preview cover, counter karakter, toggle password, dan scroll reveal.
+- Layout responsif untuk desktop, tablet, dan mobile.
 
-```sql
-SELECT COUNT(*) AS total FROM buku2;
-```
+## Teknologi
 
-Dipakai di dashboard admin untuk menghitung total buku.
+| Layer | Teknologi |
+| --- | --- |
+| Backend | PHP Native |
+| Database | MySQL atau MariaDB dengan `mysqli` |
+| Frontend | HTML5, CSS3, JavaScript vanilla |
+| Session | PHP session |
+| Styling | CSS custom properties dan responsive layout |
+| Server target | Apache, LiteSpeed, Devilbox, XAMPP, Laragon, atau Hostinger |
 
-Query JOIN 2 tabel:
-
-```sql
-SELECT b.*, COUNT(r.id) AS review_count, COALESCE(ROUND(AVG(r.rating), 1), 0) AS avg_rating
-FROM buku2 b
-LEFT JOIN reviews r ON r.buku_id = b.id
-GROUP BY b.id, b.judul, b.penulis, b.penerbit, b.tahun_terbit, b.kategori, b.harga, b.stok, b.gambar, b.deskripsi, b.created_at;
-```
-
-Dipakai pada beranda, toko, detail buku, dan dashboard admin untuk menampilkan rating rata-rata serta jumlah review.
-
-Query JOIN komunitas:
-
-```sql
-SELECT cp.*, u.nama
-FROM community_posts cp
-INNER JOIN users u ON u.id = cp.user_id
-WHERE cp.status = 'published'
-ORDER BY cp.created_at DESC;
-```
-
-Dipakai pada halaman Komunitas untuk menampilkan tulisan pembaca, nama penulis, tanggal posting, dan isi tulisan.
-
-Query JOIN review komunitas:
-
-```sql
-SELECT r.*, b.judul, b.penulis
-FROM reviews r
-INNER JOIN buku2 b ON b.id = r.buku_id;
-```
-
-Dipakai pada bagian Ulasan Pembaca di halaman Komunitas.
-
-Query newsletter:
-
-```sql
-INSERT IGNORE INTO newsletter_subscribers (email) VALUES (?);
-```
-
-Dipakai pada form newsletter footer dan halaman Komunitas. Email duplikat tidak disimpan ulang.
-
-## Cara Menjalankan Lokal
-
-1. Letakkan project di web server lokal, misalnya Devilbox:
-
-```text
-~/devilbox/data/www/pustakata/htdocs/
-```
-
-2. Buat/import database lewat phpMyAdmin atau CLI:
-
-```text
-database/schema.sql
-```
-
-Jika database lama sudah ada dan tidak ingin drop data buku, import file migration ini:
-
-```text
-database/migrations/migration_add_role_reviews.sql
-```
-
-Jika database sudah memakai schema lama dan belum memiliki fitur komunitas posting user, import file migration ini:
-
-```text
-database/migrations/migration_add_community_posts.sql
-```
-
-Jika ingin menambah data responsi dan tabel newsletter ke database lama, import:
-
-```text
-database/seed_responsi.sql
-```
-
-3. Pastikan nama database adalah:
-
-```text
-perpustakaan_db
-```
-
-4. Sesuaikan credential database di `config/conn.php` jika host/user/password lokal berbeda.
-
-Default lokal:
-
-```text
-Host     : mysql
-User     : root
-Password : kosong
-Database : perpustakaan_db
-```
-
-5. Buka aplikasi:
-
-```text
-http://pustakata.dvl.to
-```
-
-## Akun Responsi
-
-```text
-Admin:
-Email    : admin@pustakata.test
-Password : password
-
-User:
-Email    : user@pustakata.test
-Password : password
-
-User tambahan:
-Email    : nadia@pustakata.test
-Password : password
-
-Email    : raka@pustakata.test
-Password : password
-```
-
-Signup publik hanya membuat akun `user`, bukan `admin`.
-
-Catatan checkout: fitur checkout mengosongkan cart untuk alur belanja WEB1, tetapi belum ada pembayaran, order, invoice, atau pengurangan stok otomatis.
-
-## Struktur Folder
-
-Struktur project sengaja dibuat sederhana agar mudah dijelaskan saat responsi, tetapi tetap rapi untuk hosting PHP Native.
+## Struktur Project
 
 ```text
 htdocs/
@@ -187,9 +69,6 @@ htdocs/
 ├── community-create.php
 ├── community-detail.php
 ├── newsletter-subscribe.php
-├── .htaccess
-├── .deployignore
-├── README.md
 ├── admin/
 │   ├── dashboard.php
 │   ├── books.php
@@ -206,7 +85,8 @@ htdocs/
 │   ├── detail.php
 │   └── cart.php
 ├── config/
-│   └── conn.php
+│   ├── conn.php
+│   └── config.example.php
 ├── includes/
 │   └── partials/
 │       ├── public_navbar.php
@@ -214,11 +94,7 @@ htdocs/
 │       └── admin_sidebar.php
 ├── assets/
 │   ├── css/
-│   │   ├── style.css
-│   │   ├── components/
-│   │   └── pages/
 │   ├── js/
-│   │   └── script.js
 │   ├── img/
 │   └── uploads/
 └── database/
@@ -229,167 +105,183 @@ htdocs/
     └── migrations/
 ```
 
-File yang aman dirapikan hanya file dokumentasi, seed, migration, dan asset statis yang tidak dipanggil langsung oleh route publik. File halaman seperti `index.php`, `shop/detail.php`, `admin/books.php`, `config/conn.php`, dan partial di `includes/partials/` sebaiknya tidak dipindahkan lagi karena semua path, form action, helper `url()`, `asset()`, `upload_url()`, dan `partial_path()` sudah mengikuti struktur ini.
+## Database
 
-## Deploy Hostinger
+Tabel utama yang digunakan:
 
-### A. Checklist Sebelum Deploy
+| Tabel | Fungsi |
+| --- | --- |
+| `users` | Data akun user dan admin |
+| `buku2` | Data katalog buku |
+| `reviews` | Rating dan ulasan buku |
+| `community_posts` | Tulisan komunitas pembaca |
+| `newsletter_subscribers` | Data email newsletter |
 
-- Backup project final, termasuk `assets/uploads/`.
-- Backup database lokal melalui phpMyAdmin atau `mysqldump`.
-- Jalankan project di lokal dan tes beranda, toko, detail buku, cart, login, admin, komunitas, newsletter, dan upload cover.
-- Pastikan data responsi cukup: minimal 8 buku, beberapa review, beberapa tulisan komunitas, admin user, dan data newsletter bila diperlukan.
-- Pastikan file SQL yang akan diimport sudah final: gunakan `database/hostinger_import.sql` untuk deploy fresh Hostinger, atau export database lokal jika ingin membawa data lokal persis.
-- Pastikan `.htaccess` ikut upload karena file ini memblokir akses langsung ke `config/`, `database/`, `docs/`, file `.sql`, ZIP, backup, dan folder dotfile sensitif.
+File database:
 
-### B. Langkah Deploy Database
+- `database/schema.sql` untuk instalasi lokal baru.
+- `database/hostinger_import.sql` untuk import fresh di Hostinger.
+- `database/seed_responsi.sql` untuk menambah data demo tanpa menghapus data lama.
+- `database/seed_admin.sql` untuk memastikan akun admin tersedia.
+- `database/migrations/` untuk memperbarui database lama.
 
-1. Masuk hPanel Hostinger.
-2. Buka menu MySQL Databases.
-3. Buat database baru.
-4. Catat credential database:
+## Instalasi Lokal
+
+### Prasyarat
+
+- PHP 8.x.
+- MySQL atau MariaDB.
+- Apache/LiteSpeed, Devilbox, XAMPP, Laragon, atau web server lokal lain.
+- Ekstensi PHP `mysqli` aktif.
+
+### Langkah Instalasi
+
+1. Letakkan project di document root web server.
+
+   Contoh Devilbox:
+
+   ```text
+   ~/devilbox/data/www/pustakata/htdocs/
+   ```
+
+2. Import database lokal.
+
+   ```bash
+   mysql --host=mysql --user=root < database/schema.sql
+   ```
+
+   Jika memakai phpMyAdmin, buat database atau pilih database sesuai kebutuhan lalu import `database/schema.sql`.
+
+3. Sesuaikan koneksi database.
+
+   Aplikasi membaca credential dari environment variable berikut:
+
+   ```text
+   PUSTAKATA_DB_HOST
+   PUSTAKATA_DB_USER
+   PUSTAKATA_DB_PASS
+   PUSTAKATA_DB_NAME
+   ```
+
+   Jika environment variable tidak tersedia, ubah fallback di `config/conn.php`.
+
+   Contoh lokal:
+
+   ```text
+   DB Host     : mysql
+   DB User     : root
+   DB Password : kosong
+   DB Name     : perpustakaan_db
+   ```
+
+4. Buka aplikasi melalui browser.
+
+   Contoh Devilbox:
+
+   ```text
+   http://pustakata.dvl.to
+   ```
+
+## Akun Demo
+
+Semua akun demo memakai password:
 
 ```text
-DB Host     : biasanya localhost, tetap cek detail di hPanel
-DB Name     : biasanya memakai prefix, contoh u123456789_pustakata
-DB User     : biasanya memakai prefix, contoh u123456789_userdb
-DB Password : password database dari Hostinger
+password
 ```
 
-5. Buka phpMyAdmin Hostinger.
-6. Pilih database yang baru dibuat.
-7. Import salah satu file SQL:
+| Role | Email |
+| --- | --- |
+| Admin | `admin@pustakata.test` |
+| User | `user@pustakata.test` |
+| User | `nadia@pustakata.test` |
+| User | `raka@pustakata.test` |
+
+Signup publik selalu membuat akun dengan role `user`. Role `admin` harus dibuat melalui data seed, migration, atau update database secara terkontrol.
+
+## Alur Aplikasi
+
+### Alur Belanja
 
 ```text
-database/hostinger_import.sql
+Buka katalog -> pilih buku -> tambah ke cart -> login -> checkout -> cart dikosongkan
 ```
 
-atau export database lokal jika ingin membawa semua data lokal.
+Checkout pada project ini masih berupa simulasi untuk kebutuhan pembelajaran. Fitur tersebut belum membuat invoice, belum mengurangi stok otomatis, dan belum terhubung ke payment gateway.
 
-Jika memakai `database/schema.sql` atau export lokal yang berisi perintah berikut, hapus dulu sebelum import ke Hostinger:
+### Alur Komunitas
+
+```text
+Login user -> buka Komunitas -> tulis cerita -> publish -> admin dapat moderasi
+```
+
+Tulisan komunitas disimpan di tabel `community_posts` dan terhubung dengan tabel `users`.
+
+### Alur Admin Buku
+
+```text
+Login admin -> dashboard -> kelola buku -> upload cover -> data tampil di katalog
+```
+
+Cover yang diunggah disimpan di `assets/uploads/`. Format yang diterima adalah JPG, PNG, WEBP, dan AVIF dengan ukuran maksimal 2 MB.
+
+## Query Penting
+
+Beberapa query yang bisa dijelaskan saat review atau responsi:
 
 ```sql
-CREATE DATABASE IF NOT EXISTS perpustakaan_db;
-USE perpustakaan_db;
+SELECT COUNT(*) AS total FROM buku2;
 ```
 
-Database Hostinger sudah dibuat lewat hPanel, jadi phpMyAdmin cukup mengimport tabel dan data ke database yang sedang dipilih.
+Menghitung total buku untuk ringkasan dashboard.
 
-Setelah import, pastikan tabel berikut muncul:
-
-```text
-users
-buku2
-reviews
-community_posts
-newsletter_subscribers
+```sql
+SELECT b.*, COUNT(r.id) AS review_count, COALESCE(ROUND(AVG(r.rating), 1), 0) AS avg_rating
+FROM buku2 b
+LEFT JOIN reviews r ON r.buku_id = b.id
+GROUP BY b.id, b.judul, b.penulis, b.penerbit, b.tahun_terbit, b.kategori, b.harga, b.stok, b.gambar, b.deskripsi, b.created_at;
 ```
 
-Pastikan data buku, review, tulisan komunitas, dan akun admin ada.
+Mengambil data buku beserta jumlah review dan rata-rata rating.
 
-### C. Langkah Upload File
-
-Upload isi project ke `public_html`, terutama:
-
-```text
-index.php
-community.php
-community-create.php
-community-detail.php
-newsletter-subscribe.php
-.htaccess
-auth/
-shop/
-admin/
-config/
-includes/
-assets/
+```sql
+SELECT cp.*, u.nama
+FROM community_posts cp
+INNER JOIN users u ON u.id = cp.user_id
+WHERE cp.status = 'published'
+ORDER BY cp.created_at DESC;
 ```
 
-Pastikan folder ini ikut:
+Menampilkan tulisan komunitas yang sudah dipublikasikan bersama nama penulisnya.
 
-```text
-assets/uploads/
-```
+## Deploy ke Hostinger
 
-Folder `assets/uploads/` dipakai untuk cover buku hasil upload admin.
+1. Buat database MySQL dari hPanel.
+2. Catat host, nama database, user, dan password database.
+3. Import `database/hostinger_import.sql` melalui phpMyAdmin Hostinger.
+4. Upload source code ke `public_html`.
+5. Pastikan folder `assets/uploads/` ikut terupload dan writable.
+6. Ubah konfigurasi database di `config/conn.php` atau gunakan environment variable jika hosting mendukung.
+7. Jangan upload folder dan file lokal yang tidak diperlukan.
 
-### D. Konfigurasi `conn.php`
-
-File koneksi ada di:
-
-```text
-config/conn.php
-```
-
-Credential lokal seperti ini tidak boleh dipakai di Hostinger:
-
-```php
-$servername = 'mysql';
-$username = 'root';
-$password = '';
-$database = 'perpustakaan_db';
-```
-
-Gunakan credential Hostinger, contoh:
-
-```php
-$servername = 'localhost';
-$username = 'u123456789_userdb';
-$password = 'PASSWORD_HOSTINGER';
-$database = 'u123456789_pustakata';
-```
-
-Project juga mendukung environment variable:
-
-```text
-PUSTAKATA_DB_HOST=localhost
-PUSTAKATA_DB_USER=u123456789_userdb
-PUSTAKATA_DB_PASS=PASSWORD_HOSTINGER
-PUSTAKATA_DB_NAME=u123456789_pustakata
-```
-
-Jika shared hosting tidak menyediakan environment variable, ubah fallback di `config/conn.php` sebelum upload. Host database Hostinger biasanya `localhost`, tetapi tetap cek detail di hPanel.
-
-### E. File Yang Tidak Boleh Ikut Upload
-
-Jangan upload file/folder berikut ke `public_html`:
+File dan folder yang sebaiknya tidak ikut ke `public_html`:
 
 ```text
 .git/
 .codex/
 .agents/
 node_modules/
-htdocs.zip
+database/
+docs/
 *.zip
 *.bak
 *.backup
 *.old
 *.log
-database/ setelah SQL selesai diimport
-docs/ jika tidak dibutuhkan
-file laporan
-file LaTeX
-screenshot tugas
-file catatan pribadi
-file dev lain
+laporan*
 ```
 
-Gunakan `.deployignore` sebagai checklist manual saat memilih file yang akan diupload.
-
-### F. Permission Upload
-
-Folder berikut harus bisa ditulis oleh server:
-
-```text
-assets/uploads/
-```
-
-Jika upload cover gagal, cek permission folder. Umumnya folder cukup `755`. Jangan langsung memakai `777` kecuali benar-benar terpaksa dan paham risikonya.
-
-### G. Cek Keamanan Setelah Upload
-
-Coba akses URL sensitif:
+Setelah deploy, coba akses URL sensitif seperti:
 
 ```text
 https://domain.com/database/schema.sql
@@ -397,116 +289,53 @@ https://domain.com/config/conn.php
 https://domain.com/.git/
 ```
 
-Hasil aman adalah `403`, `404`, blank, atau tidak bisa diakses. Jika file SQL bisa didownload, hapus folder `database/` dari `public_html`.
+Hasil yang aman adalah tidak bisa diakses publik, misalnya `403`, `404`, blank, atau redirect tertutup.
 
-### H. Checklist Tes Setelah Online
+## Checklist Pengujian
+
+Gunakan daftar ini setelah instalasi lokal atau deploy:
 
 - Beranda tampil dan data buku muncul.
-- Katalog tampil.
-- Search jalan.
-- Filter kategori jalan.
-- Pagination jalan.
-- Detail buku tampil.
+- Katalog dapat dicari dan difilter.
+- Pagination katalog berjalan.
+- Detail buku menampilkan data lengkap.
 - Rating dan jumlah review tampil.
-- Login admin jalan.
-- Dashboard admin tampil.
-- CRUD buku jalan.
-- Upload cover jalan.
-- Signup user jalan.
-- Login user jalan.
-- Cart session jalan.
-- Checkout keranjang jalan sesuai alur WEB1.
-- User bisa membuat tulisan komunitas.
-- Detail tulisan komunitas tampil.
-- Admin bisa moderasi komunitas.
-- Newsletter subscribe tersimpan ke database.
-- Toast, modal confirm, toggle password, loading state, character counter, preview cover, dan scroll reveal masih aktif.
-- Responsive mobile tidak overflow.
+- Rekomendasi buku sejenis tampil.
+- Signup user berjalan.
+- Login dan logout berjalan.
+- User tidak bisa membuka halaman admin.
+- Cart dapat tambah, update, hapus, dan kosongkan item.
+- Checkout meminta login jika user belum masuk.
+- Admin dapat membuka dashboard.
+- Admin dapat tambah, edit, dan hapus buku.
+- Upload cover JPG, PNG, WEBP, dan AVIF berjalan.
+- Preview cover tampil sebelum submit.
+- Admin dapat moderasi tulisan komunitas.
+- Newsletter tersimpan ke database.
+- Tampilan mobile tidak overflow.
 
-### I. Ganti Password Admin
+## Troubleshooting
 
-Jika masih memakai akun responsi:
+| Masalah | Pemeriksaan |
+| --- | --- |
+| Website blank | Cek PHP error log, versi PHP, dan konfigurasi `conn.php` |
+| Database gagal terhubung | Cek host, username, password, nama database, dan import SQL |
+| CSS atau JS tidak terbaca | Pastikan folder `assets/` ikut terupload |
+| Cover buku tidak tampil | Pastikan file ada di `assets/uploads/` dan nama file sesuai database |
+| Upload cover gagal | Cek permission `assets/uploads/`, ukuran file, dan format gambar |
+| Login gagal | Cek tabel `users`, password hash, dan session PHP |
+| Admin redirect terus | Pastikan akun memiliki role `admin` |
+| SQL import error di Hostinger | Hapus `CREATE DATABASE` dan `USE` jika memakai file SQL lokal |
+| Akses file sensitif terbuka | Pastikan `.htaccess` ikut terupload atau hapus folder sensitif dari public |
 
-```text
-admin@pustakata.test
-password
-```
+## Catatan Keamanan
 
-Ganti password admin setelah deploy sebelum link dibagikan.
+- Ganti password admin sebelum aplikasi dibagikan secara publik.
+- Jangan simpan credential produksi di repository publik.
+- Hindari upload folder `.git`, file SQL, backup, atau laporan ke `public_html`.
+- Pastikan `assets/uploads/` hanya menerima file gambar yang valid.
+- Pertahankan proteksi `.htaccess` untuk `config/`, `database/`, `docs/`, dan dotfile sensitif.
 
-### J. Troubleshooting
+## Lisensi dan Penggunaan
 
-Website blank:
-Cek PHP error log Hostinger, versi PHP, dan pastikan `config/conn.php` tidak typo.
-
-Database connection failed:
-Cek DB host, DB name, DB user, DB password, dan pastikan database sudah diimport.
-
-CSS/JS tidak terbaca:
-Pastikan folder `assets/` ikut upload dan helper `asset()` tidak diubah.
-
-Gambar cover broken:
-Pastikan `assets/uploads/` ikut upload dan nama file di database sama dengan file di folder.
-
-Upload cover gagal:
-Cek permission `assets/uploads/`, ukuran file maksimal 2 MB, dan format JPG/PNG/WEBP/AVIF.
-
-Login gagal:
-Cek tabel `users`, password hash, session PHP, dan credential akun.
-
-SQL import error:
-Pastikan database dipilih di phpMyAdmin. Hapus `CREATE DATABASE` dan `USE` jika Hostinger menolak.
-
-500 Internal Server Error:
-Cek `.htaccess`, versi PHP, ekstensi `mysqli`, dan error log.
-
-Permission denied:
-Cek permission folder dan file. Mulai dari folder `755` dan file `644`.
-
-Halaman admin redirect terus:
-Pastikan login sebagai user role `admin`, bukan role `user`.
-
-`.htaccess` tidak berjalan:
-Pastikan file `.htaccess` ikut upload dan hosting Apache/LiteSpeed mengizinkan aturan `.htaccess`.
-
-### K. Checklist Final Sebelum Link Dikirim
-
-- Database Hostinger sudah diimport.
-- Credential `config/conn.php` sudah benar.
-- Folder `database/`, `.git/`, `.codex/`, `.agents/`, ZIP backup, dan file laporan tidak ada di public.
-- `assets/uploads/` ada dan writable.
-- Password admin sudah diganti.
-- Semua fitur utama sudah dites.
-- Website dicek di mobile dan desktop.
-- URL sensitif sudah tidak bisa diakses publik.
-
-## Pengujian Manual
-
-- Buka beranda dan pastikan buku populer muncul dari database.
-- Buka toko, coba search, filter kategori, pagination.
-- Pastikan badge stok tampil di toko dan admin.
-- Buka detail buku, pastikan rating/review tampil.
-- Cek rekomendasi buku sejenis di detail.
-- Tambahkan buku ke cart, update jumlah, hapus item, lalu checkout.
-- Subscribe newsletter dari footer atau halaman Komunitas, lalu cek tabel `newsletter_subscribers`.
-- Login admin.
-- Tambah buku dengan cover.
-- Coba counter deskripsi dan preview cover sebelum simpan.
-- Edit buku dan ganti cover.
-- Hapus buku dan pastikan cover lama ikut terhapus.
-- Update profil admin.
-- Signup user, lalu pastikan user tidak bisa membuka halaman admin.
-- Login sebagai user, buka Komunitas, klik Tulis Cerita, lalu publish tulisan.
-- Buka detail tulisan komunitas dan pastikan nama penulis muncul dari tabel users.
-- Login admin, buka Moderasi Komunitas, coba hide/publish/delete tulisan via tombol POST.
-
-## Alur Responsi Komunitas
-
-1. Buka halaman Komunitas.
-2. Tunjukkan bagian Tulisan Komunitas yang berasal dari JOIN `community_posts` dan `users`.
-3. Login sebagai user.
-4. Buat tulisan baru lewat tombol Tulis Cerita.
-5. Pastikan tulisan muncul di daftar dan detail tulisan.
-6. Login sebagai admin.
-7. Buka Moderasi Komunitas, lalu tunjukkan aksi hide/publish/delete.
-8. Tunjukkan bagian Ulasan Pembaca yang tetap berasal dari JOIN `reviews` dan `buku2`.
+Project ini dibuat untuk kebutuhan pembelajaran dan evaluasi Pemrograman Web. Source code dapat digunakan sebagai referensi belajar, dengan tetap menyesuaikan credential, data, dan konfigurasi keamanan sebelum dipakai di lingkungan produksi.
