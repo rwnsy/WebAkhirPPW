@@ -1,0 +1,30 @@
+# Local/editor/system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Codex/agent workspace notes
+.codex/
+.agents/
+
+# Environment and local-only config
+.env
+.env.*
+config/config.local.php
+
+# Backups, archives, logs, reports
+*.zip
+*.bak
+*.backup
+*.old
+*.log
+*.tmp
+*.tex
+htdocs.zip
+laporan*
+screenshot*
+
+# Dependency/build folders if ever created
+node_modules/
+vendor/

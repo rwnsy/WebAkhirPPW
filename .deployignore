@@ -1,0 +1,16 @@
+# File/folder lokal yang jangan ikut upload manual ke public_html.
+.git/
+.codex/
+.agents/
+node_modules/
+database/
+docs/
+*.zip
+*.bak
+*.backup
+*.old
+*.log
+*.tex
+laporan*
+screenshot*
+htdocs.zip

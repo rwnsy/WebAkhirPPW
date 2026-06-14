@@ -1,0 +1,132 @@
+.cart-page {
+    padding: clamp(36px, 5vw, 60px) 0 86px;
+}
+
+.cart-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: clamp(20px, 3vw, 28px);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.cart-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    -webkit-overflow-scrolling: touch;
+}
+
+.cart-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+}
+
+.cart-table th,
+.cart-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.cart-table th {
+    color: var(--primary);
+    font-size: 13px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--surface) 86%, var(--primary-soft));
+}
+
+.cart-table td {
+    color: var(--text);
+}
+
+.cart-table tbody tr {
+    transition: background .2s ease;
+}
+
+.cart-table tbody tr:hover {
+    background: color-mix(in srgb, var(--surface) 88%, var(--primary-soft));
+}
+
+.cart-table tfoot td {
+    border-bottom: 0;
+}
+
+.cart-product {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cart-product img,
+.cart-product .thumb {
+    width: 52px;
+    height: 68px;
+    flex: 0 0 auto;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.cart-product strong,
+.cart-product small {
+    display: block;
+}
+
+.cart-product small {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.qty-input {
+    width: 86px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 800;
+    outline: none;
+}
+
+.qty-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.total-row td {
+    font-weight: 900;
+    font-size: 18px;
+    background: color-mix(in srgb, var(--surface) 86%, var(--primary-soft));
+}
+
+.cart-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+@media (max-width: 620px) {
+    .cart-table {
+        min-width: 640px;
+    }
+
+    .cart-actions {
+        display: grid;
+    }
+
+    .cart-actions .btn {
+        width: 100%;
+    }
+}
