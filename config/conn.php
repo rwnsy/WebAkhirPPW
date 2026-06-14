@@ -209,11 +209,15 @@ function is_admin()
     return current_user_role() === 'admin';
 }
 
-function require_login()
+function require_login($redirectAfterLogin = null)
 {
     if (!is_logged_in()) {
+        $redirectPath = $redirectAfterLogin === null
+            ? current_request_path()
+            : safe_redirect_path($redirectAfterLogin);
+
         set_flash('error', 'Silakan login terlebih dahulu.');
-        redirect('auth/login.php');
+        redirect('auth/login.php?redirect=' . rawurlencode($redirectPath));
     }
 }
 

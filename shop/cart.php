@@ -103,6 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Keranjang masih kosong.');
             }
 
+            require_login('shop/cart.php');
+
             $_SESSION['cart'] = [];
             set_flash('success', 'Checkout berhasil. Pembayaran belum diproses pada versi ini.');
         }

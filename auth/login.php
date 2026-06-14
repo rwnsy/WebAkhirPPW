@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . "/../config/conn.php";
 
+$redirectTo = safe_redirect_path($_POST['redirect'] ?? $_GET['redirect'] ?? '', '');
+
 if (is_logged_in()) {
-    redirect(is_admin() ? 'admin/dashboard.php' : 'index.php');
+    redirect($redirectTo !== '' ? $redirectTo : (is_admin() ? 'admin/dashboard.php' : 'index.php'));
 }
 
 $error = "";
@@ -33,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
 
             set_flash('success', 'Selamat datang, ' . $user['nama'] . '.');
-            redirect($role === 'admin' ? 'admin/dashboard.php' : 'index.php');
+            redirect($redirectTo !== '' ? $redirectTo : ($role === 'admin' ? 'admin/dashboard.php' : 'index.php'));
         }
 
         $error = "Email atau password tidak sesuai.";
@@ -65,6 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" class="form-stack" data-validate>
                 <?= csrf_field(); ?>
+                <?php if ($redirectTo !== ''): ?>
+                    <input type="hidden" name="redirect" value="<?= e($redirectTo); ?>">
+                <?php endif; ?>
                 <label>
                     Email
                     <input type="email" name="email" required placeholder="nama@email.com" value="<?= e($_POST['email'] ?? ''); ?>">
